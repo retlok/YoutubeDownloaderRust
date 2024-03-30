@@ -1,6 +1,9 @@
 use std::{borrow::Borrow, fs::File, io::Write, pin::Pin};
 
-use futures::{future::{self, TryJoinAll}, Future, FutureExt, Stream, TryFutureExt};
+use futures::{
+    future::{self, TryJoinAll},
+    Future, FutureExt, Stream, TryFutureExt,
+};
 use rusty_ytdl::{
     search::{Playlist, PlaylistSearchOptions},
     Video, VideoError,
@@ -45,22 +48,19 @@ async fn main() {
 
     let mut test: Vec<Pin<Box<dyn Future<Output = Result<(), VideoError>> + Send>>> = Vec::new();
     for video in playlist.videos {
-        test.push(Box::pin(download_bs(Video::new(video.url).unwrap(), video.title)));
+        test.push(Box::pin(download_bs(
+            Video::new(video.url).unwrap(),
+            video.title,
+        )));
     }
 
-   let _ =  future::try_join_all(test.into_iter().map(tokio::spawn)).await;
+    let _ = future::try_join_all(test.into_iter().map(tokio::spawn)).await;
 }
 
-async fn download_bs(video: Video, video_title : String) -> Result<(), VideoError> {
+async fn download_bs(video: Video, video_title: String) -> Result<(), VideoError> {
     let stream = video.stream().await.unwrap();
-    let mut file = File::create(
-        
-        "downloads\\"
-            .to_string()
-            + &video_title
-            + ".mp3",
-    )
-    .map_err(|e| VideoError::DownloadError(e.to_string()))?;
+    let mut file = File::create("downloads\\".to_string() + &video_title + ".mp3")
+        .map_err(|e| VideoError::DownloadError(e.to_string()))?;
 
     while let Some(chunk) = stream.chunk().await.unwrap() {
         file.write_all(&chunk)
