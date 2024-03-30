@@ -54,7 +54,8 @@ async fn main() {
 async fn download_bs(video: Video, video_title : String) -> Result<(), VideoError> {
     let stream = video.stream().await.unwrap();
     let mut file = File::create(
-        "C:\\Users\\main\\Desktop\\Desktop\\Personal_Projects\\YoutubeDownloaderRust\\downloads\\"
+        
+        "downloads\\"
             .to_string()
             + &video_title
             + ".mp3",
